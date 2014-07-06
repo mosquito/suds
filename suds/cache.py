@@ -191,7 +191,7 @@ class FileCache(Cache):
         try:
             fn = self.__fn(id)
             f = self.open(fn, 'w')
-            f.write(str(bfr))
+            f.write(bfr)
             f.close()
             return bfr
         except:
