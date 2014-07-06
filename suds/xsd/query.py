@@ -25,7 +25,7 @@ from suds.xsd import qualify, isqref
 from suds.xsd.sxbuiltin import Factory
 
 log = getLogger(__name__)
-
+log.trace = getattr(log, 'trace', log.debug)
 
 class Query(Object):
     """
@@ -68,7 +68,7 @@ class Query(Object):
             return True
         reject = ( result in self.history )
         if reject:
-            log.debug('result %s, rejected by\n%s', Repr(result), self)
+            log.trace('result %s, rejected by\n%s', Repr(result), self)
         return reject
 
     def result(self, result):
@@ -78,11 +78,11 @@ class Query(Object):
         @type result: L{sxbase.SchemaObject}
         """
         if result is None:
-            log.debug('%s, not-found', self.ref)
+            log.trace('%s, not-found', self.ref)
             return
         if self.resolved:
             result = result.resolve()
-        log.debug('%s, found as: %s', self.ref, Repr(result))
+        log.trace('%s, found as: %s', self.ref, Repr(result))
         self.history.append(result)
         return result
 
@@ -98,7 +98,7 @@ class BlindQuery(Query):
         if schema.builtin(self.ref):
             name = self.ref[0]
             b = Factory.create(schema, name)
-            log.debug('%s, found builtin (%s)', self.id, name)
+            log.trace('%s, found builtin (%s)', self.id, name)
             return b
         result = None
         for d in (schema.elements, schema.types):
@@ -124,7 +124,7 @@ class TypeQuery(Query):
         if schema.builtin(self.ref):
             name = self.ref[0]
             b = Factory.create(schema, name)
-            log.debug('%s, found builtin (%s)', self.id, name)
+            log.trace('%s, found builtin (%s)', self.id, name)
             return b
         result = schema.types.get(self.ref)
         if self.filter(result):

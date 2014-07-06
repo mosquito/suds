@@ -22,5 +22,5 @@ See the setup.py script for more detailed information.
 
 """
 
-__version__ = "0.4.3.1"
+__version__ = "0.4.3.2"
 __build__ = "mosquito"

@@ -27,6 +27,7 @@ from suds.sudsobject import Object
 from suds.xsd.query import BlindQuery, TypeQuery, qualify
 
 log = getLogger(__name__)
+log.trace = getattr(log, 'trace', log.debug)
 
 
 class Resolver:
@@ -54,14 +55,14 @@ class Resolver:
         @return: The found schema I{type}
         @rtype: L{xsd.sxbase.SchemaObject}
         """
-        log.debug('searching schema for (%s)', name)
+        log.trace('searching schema for (%s)', name)
         qref = qualify(name, self.schema.root, self.schema.tns)
         query = BlindQuery(qref)
         result = query.execute(self.schema)
         if result is None:
             log.error('(%s) not-found', name)
             return None
-        log.debug('found (%s) as (%s)', name, Repr(result))
+        log.trace('found (%s) as (%s)', name, Repr(result))
         if resolved:
             result = result.resolve()
         return result
@@ -125,7 +126,7 @@ class PathResolver(Resolver):
         """
         result = None
         name = parts[0]
-        log.debug('searching schema for (%s)', name)
+        log.trace('searching schema for (%s)', name)
         qref = self.qualify(parts[0])
         query = BlindQuery(qref)
         result = query.execute(self.schema)
@@ -133,7 +134,7 @@ class PathResolver(Resolver):
             log.error('(%s) not-found', name)
             raise PathResolver.BadPath(name)
         else:
-            log.debug('found (%s) as (%s)', name, Repr(result))
+            log.trace('found (%s) as (%s)', name, Repr(result))
         return result
 
     def branch(self, root, parts):
@@ -149,14 +150,14 @@ class PathResolver(Resolver):
         result = root
         for part in parts[1:-1]:
             name = splitPrefix(part)[1]
-            log.debug('searching parent (%s) for (%s)', Repr(result), name)
+            log.trace('searching parent (%s) for (%s)', Repr(result), name)
             result, ancestry = result.get_child(name)
             if result is None:
                 log.error('(%s) not-found', name)
                 raise PathResolver.BadPath(name)
             else:
                 result = result.resolve(nobuiltin=True)
-                log.debug('found (%s) as (%s)', name, Repr(result))
+                log.trace('found (%s) as (%s)', name, Repr(result))
         return result
 
     def leaf(self, parent, parts):
@@ -255,7 +256,7 @@ class TreeResolver(Resolver):
         else:
             frame = Frame(x)
         self.stack.append(frame)
-        log.debug('push: (%s)\n%s', Repr(frame), Repr(self.stack))
+        log.trace('push: (%s)\n%s', Repr(frame), Repr(self.stack))
         return frame
 
     def top(self):
@@ -277,10 +278,10 @@ class TreeResolver(Resolver):
         """
         if len(self.stack):
             popped = self.stack.pop()
-            log.debug('pop: (%s)\n%s', Repr(popped), Repr(self.stack))
+            log.trace('pop: (%s)\n%s', Repr(popped), Repr(self.stack))
             return popped
         else:
-            log.debug('stack empty, not-popped')
+            log.trace('stack empty, not-popped')
         return None
 
     def depth(self):
@@ -293,7 +294,7 @@ class TreeResolver(Resolver):
 
     def getchild(self, name, parent):
         """Get a child by name."""
-        log.debug('searching parent (%s) for (%s)', Repr(parent), name)
+        log.trace('searching parent (%s) for (%s)', Repr(parent), name)
         if name.startswith('@'):
             return parent.get_attribute(name[1:])
         else:
@@ -369,7 +370,7 @@ class NodeResolver(TreeResolver):
 
     def query(self, name, node):
         """Blindly query the schema by name."""
-        log.debug('searching schema for (%s)', name)
+        log.trace('searching schema for (%s)', name)
         qref = qualify(name, node, node.namespace())
         query = BlindQuery(qref)
         result = query.execute(self.schema)
@@ -437,7 +438,7 @@ class GraphResolver(TreeResolver):
 
     def query(self, name):
         """Blindly query the schema by name."""
-        log.debug('searching schema for (%s)', name)
+        log.trace('searching schema for (%s)', name)
         schema = self.schema
         wsdl = self.wsdl()
         if wsdl is None:

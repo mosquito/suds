@@ -31,6 +31,7 @@ from urlparse import urljoin
 
 
 log = getLogger(__name__)
+log.trace = getattr(log, 'trace', log.debug)
 
 
 class RestrictionMatcher:
@@ -87,10 +88,10 @@ class TypedContent(Content):
             return self
         query = TypeQuery(qref)
         query.history = [self]
-        log.debug('%s, resolving: %s\n using:%s', self.id, qref, query)
+        log.trace('%s, resolving: %s\n using:%s', self.id, qref, query)
         resolved = query.execute(self.schema)
         if resolved is None:
-            log.debug(self.schema)
+            log.trace(self.schema)
             raise TypeNotFound(qref)
         if resolved.builtin() and nobuiltin:
             return self
@@ -199,7 +200,7 @@ class AttributeGroup(SchemaObject):
             query = AttrGroupQuery(self.ref)
             ag = query.execute(self.schema)
             if ag is None:
-                log.debug(self.schema)
+                log.trace(self.schema)
                 raise TypeNotFound(self.ref)
             deps.append(ag)
             midx = 0
@@ -280,7 +281,7 @@ class Restriction(SchemaObject):
             query = TypeQuery(self.ref)
             super = query.execute(self.schema)
             if super is None:
-                log.debug(self.schema)
+                log.trace(self.schema)
                 raise TypeNotFound(self.ref)
             if not super.builtin():
                 deps.append(super)
@@ -446,7 +447,7 @@ class Element(TypedContent):
             query = ElementQuery(self.ref)
             e = query.execute(self.schema)
             if e is None:
-                log.debug(self.schema)
+                log.trace(self.schema)
                 raise TypeNotFound(self.ref)
             deps.append(e)
             midx = 0
@@ -493,7 +494,7 @@ class Extension(SchemaObject):
             query = TypeQuery(self.ref)
             super = query.execute(self.schema)
             if super is None:
-                log.debug(self.schema)
+                log.trace(self.schema)
                 raise TypeNotFound(self.ref)
             if not super.builtin():
                 deps.append(super)
@@ -561,14 +562,14 @@ class Import(SchemaObject):
         if self.opened:
             return
         self.opened = True
-        log.debug('%s, importing ns="%s", location="%s"', self.id, self.ns[1], self.location)
+        log.trace('%s, importing ns="%s", location="%s"', self.id, self.ns[1], self.location)
         result = self.locate()
         if result is None:
             if self.location is None:
-                log.debug('imported schema (%s) not-found', self.ns[1])
+                log.trace('imported schema (%s) not-found', self.ns[1])
             else:
                 result = self.download(options)
-        log.debug('imported:\n%s', result)
+        log.trace('imported:\n%s', result)
         return result
 
     def locate(self):
@@ -627,9 +628,9 @@ class Include(SchemaObject):
         if self.opened:
             return
         self.opened = True
-        log.debug('%s, including location="%s"', self.id, self.location)
+        log.trace('%s, including location="%s"', self.id, self.location)
         result = self.download(options)
-        log.debug('included:\n%s', result)
+        log.trace('included:\n%s', result)
         return result
 
     def download(self, options):
@@ -698,7 +699,7 @@ class Attribute(TypedContent):
             query = AttrQuery(self.ref)
             a = query.execute(self.schema)
             if a is None:
-                log.debug(self.schema)
+                log.trace(self.schema)
                 raise TypeNotFound(self.ref)
             deps.append(a)
             midx = 0
